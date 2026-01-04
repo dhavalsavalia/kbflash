@@ -74,15 +74,25 @@ func DefaultPath() (string, error) {
 	return filepath.Join(home, ".config", "kbflash", "config.toml"), nil
 }
 
+// LocalConfigName is the filename looked for in the current directory.
+const LocalConfigName = "config.kbflash.toml"
+
 // Load reads and parses a config file from the given path.
-// If path is empty, it uses the default XDG path.
+// If path is empty, it looks for config.kbflash.toml in the current directory first,
+// then falls back to the default XDG path (~/.config/kbflash/config.toml).
 func Load(path string) (*Config, error) {
 	if path == "" {
-		defaultPath, err := DefaultPath()
-		if err != nil {
-			return nil, err
+		// Check for local config first
+		if _, err := os.Stat(LocalConfigName); err == nil {
+			path = LocalConfigName
+		} else {
+			// Fall back to XDG default
+			defaultPath, err := DefaultPath()
+			if err != nil {
+				return nil, err
+			}
+			path = defaultPath
 		}
-		path = defaultPath
 	}
 
 	data, err := os.ReadFile(path)
