@@ -5,6 +5,7 @@ package device
 import (
 	"context"
 	"os"
+	"os/user"
 	"path/filepath"
 	"time"
 )
@@ -22,10 +23,10 @@ func (d *linuxDetector) Detect(ctx context.Context, volumeName string, pollInter
 	go func() {
 		defer close(events)
 
-		user := os.Getenv("USER")
+		username := getUsername()
 		paths := []string{
-			filepath.Join("/run/media", user, volumeName),
-			filepath.Join("/media", user, volumeName),
+			filepath.Join("/run/media", username, volumeName),
+			filepath.Join("/media", username, volumeName),
 		}
 
 		var lastConnected bool
@@ -77,4 +78,21 @@ func (d *linuxDetector) findDevice(paths []string) (bool, string) {
 		return false, paths[0]
 	}
 	return false, ""
+}
+
+// getUsername returns the current username, trying multiple methods.
+func getUsername() string {
+	// Try USER env var first (most common)
+	if u := os.Getenv("USER"); u != "" {
+		return u
+	}
+	// Try LOGNAME as fallback
+	if u := os.Getenv("LOGNAME"); u != "" {
+		return u
+	}
+	// Last resort: use os/user package
+	if u, err := user.Current(); err == nil {
+		return u.Username
+	}
+	return ""
 }

@@ -10,7 +10,16 @@
       "Bash(./kbflash:*)",
       "Bash(echo:*)",
       "Bash(/tmp/kbflash:*)",
-      "Bash(go run:*)"
+      "Bash(go run:*)",
+      "mcp__plugin_beads_beads__close",
+      "Bash(GOOS=linux go build:*)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash status)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash diff)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash log --oneline -3)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash add internal/device/)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"$\\(cat <<''EOF''\nImplement cross-platform device detection\n\nAdd detector system that polls for mounted UF2 bootloader volumes.\nSupports macOS \\(/Volumes\\) and Linux \\(/run/media, /media\\).\n\n- Detector interface with Detect\\(\\) returning event channel\n- darwinDetector polls /Volumes/{name}\n- linuxDetector polls /run/media/$USER/{name} and /media/$USER/{name}\n- Emits events on connect/disconnect state changes\n- Respects context cancellation for clean shutdown\n- Configurable poll interval\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(go vet:*)",
+      "Bash(staticcheck:*)"
     ]
   }
 }
