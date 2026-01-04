@@ -64,9 +64,13 @@ type Model struct {
 	builder  *firmware.Builder
 	flasher  *firmware.Flasher
 
-	// Detection context
+	// Detection context and channel
 	detectCtx    context.Context
 	detectCancel context.CancelFunc
+	detectEvents <-chan device.Event
+
+	// Build progress channel
+	buildProgress chan firmware.BuildProgress
 
 	// Operation state
 	buildPercent   int
@@ -96,7 +100,7 @@ func NewModel(cfg *config.Config) *Model {
 		activePanel:     PanelFirmware,
 		deviceStatus:    DeviceDisconnected,
 		firmwarePanel:   NewFirmwarePanel(),
-		statusPanel:     NewStatusPanel(isSplit, cfg.Device.Name, sides),
+		statusPanel:     NewStatusPanel(isSplit, cfg.Build.Enabled, cfg.Device.Name, sides),
 		logPanel:        NewLogPanel(),
 		helpOverlay:     NewHelpOverlay(isSplit, cfg.Build.Enabled),
 		buildMenuDialog: NewBuildMenuDialog(sides),
@@ -139,14 +143,9 @@ func (m *Model) startDetection() tea.Cmd {
 
 	m.detectCtx, m.detectCancel = context.WithCancel(context.Background())
 	pollInterval := time.Duration(m.cfg.Device.PollInterval)
-	events := m.detector.Detect(m.detectCtx, m.cfg.Device.Name, pollInterval)
+	m.detectEvents = m.detector.Detect(m.detectCtx, m.cfg.Device.Name, pollInterval)
 
-	return func() tea.Msg {
-		for event := range events {
-			return deviceEventMsg{event: event}
-		}
-		return nil
-	}
+	return m.listenForNextEvent()
 }
 
 // deviceEventMsg wraps device events
@@ -202,7 +201,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case buildProgressMsg:
 		m.buildPercent = msg.progress.Percent
-		return m, nil
+		// Continue listening for more progress
+		return m, m.listenForBuildProgress()
 
 	case buildCompleteMsg:
 		if msg.result.Success {
@@ -257,10 +257,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// listenForNextEvent continues listening on the device channel
+// listenForNextEvent continues listening on the existing device channel
 func (m *Model) listenForNextEvent() tea.Cmd {
-	events := m.detector.Detect(m.detectCtx, m.cfg.Device.Name, time.Duration(m.cfg.Device.PollInterval))
+	events := m.detectEvents
 	return func() tea.Msg {
+		if events == nil {
+			return nil
+		}
 		for event := range events {
 			return deviceEventMsg{event: event}
 		}
@@ -432,19 +435,41 @@ func (m *Model) startBuild(target string) (tea.Model, tea.Cmd) {
 	m.startTime = time.Now()
 	m.logPanel.Add(LogInfo, "Building: "+target)
 
+	// Create progress channel
+	m.buildProgress = make(chan firmware.BuildProgress, 10)
+
 	ctx := context.Background()
 	return m, tea.Batch(
 		func() tea.Msg {
 			result := m.builder.Build(ctx, target, func(p firmware.BuildProgress) {
-				// Progress callback - we can't send tea.Msg from here directly
-				// but we update buildPercent which is read during render
+				// Send progress to channel (non-blocking)
+				select {
+				case m.buildProgress <- p:
+				default:
+				}
 			})
+			close(m.buildProgress)
 			return buildCompleteMsg{result: result}
 		},
+		m.listenForBuildProgress(),
 		tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
 			return tickMsg{}
 		}),
 	)
+}
+
+// listenForBuildProgress listens for build progress updates
+func (m *Model) listenForBuildProgress() tea.Cmd {
+	return func() tea.Msg {
+		if m.buildProgress == nil {
+			return nil
+		}
+		progress, ok := <-m.buildProgress
+		if !ok {
+			return nil
+		}
+		return buildProgressMsg{progress: progress}
+	}
 }
 
 func (m *Model) prepareFlash() (tea.Model, tea.Cmd) {

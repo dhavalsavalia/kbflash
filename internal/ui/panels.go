@@ -155,14 +155,16 @@ type StatusPanel struct {
 	width      int
 	height     int
 	isSplit    bool
+	hasBuild   bool
 	deviceName string
 	sides      []string
 }
 
 // NewStatusPanel creates a new status panel
-func NewStatusPanel(isSplit bool, deviceName string, sides []string) *StatusPanel {
+func NewStatusPanel(isSplit bool, hasBuild bool, deviceName string, sides []string) *StatusPanel {
 	return &StatusPanel{
 		isSplit:    isSplit,
+		hasBuild:   hasBuild,
 		deviceName: deviceName,
 		sides:      sides,
 	}
@@ -187,7 +189,9 @@ func (p *StatusPanel) ViewIdle(build *firmware.Build) string {
 	lines = append(lines, centerText("SELECT FIRMWARE", boxWidth))
 	lines = append(lines, "")
 	lines = append(lines, centerText("Choose a build to flash", boxWidth))
-	lines = append(lines, centerText("or press B to build new", boxWidth))
+	if p.hasBuild {
+		lines = append(lines, centerText("or press B to build new", boxWidth))
+	}
 	lines = append(lines, "")
 
 	if build != nil {

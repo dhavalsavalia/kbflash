@@ -19,7 +19,15 @@
       "Bash(git -C /Users/dhavalsavalia/projects/kbflash add internal/device/)",
       "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"$\\(cat <<''EOF''\nImplement cross-platform device detection\n\nAdd detector system that polls for mounted UF2 bootloader volumes.\nSupports macOS \\(/Volumes\\) and Linux \\(/run/media, /media\\).\n\n- Detector interface with Detect\\(\\) returning event channel\n- darwinDetector polls /Volumes/{name}\n- linuxDetector polls /run/media/$USER/{name} and /media/$USER/{name}\n- Emits events on connect/disconnect state changes\n- Respects context cancellation for clean shutdown\n- Configurable poll interval\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(go vet:*)",
-      "Bash(staticcheck:*)"
+      "Bash(staticcheck:*)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash diff --stat)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash add internal/firmware/)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"$\\(cat <<''EOF''\nAdd firmware operations: scanner, flasher, and builder\n\nImplements config-driven firmware operations:\n- Scanner: finds UF2 files in dated dirs \\(YYYYMMDD\\) or flat structure\n- Flasher: copies firmware to device with size validation\n- Builder: executes build command with {{side}} substitution, parses ninja progress\n\nAll operations accept context for cancellation.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash log:*)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash add:*)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit --amend --no-edit)",
+      "Bash(go mod tidy:*)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"$\\(cat <<''EOF''\nAdd config-driven TUI with split/uniboard support\n\nPort Bubbletea TUI from corne-build and adapt it for the config-driven\narchitecture. Changes include:\n\n- internal/ui/model.go: Main model using config for keyboard name, sides,\n  build command. Uses new device.Detector interface instead of Watcher.\n- internal/ui/panels.go: FirmwarePanel, StatusPanel, LogPanel with\n  conditional rendering for split vs uniboard keyboards.\n- internal/ui/dialogs.go: BuildMenuDialog shows configured targets from\n  config.Keyboard.Sides. ConfirmDialog for factory reset.\n- internal/ui/styles.go: ANSI color styles and progress bar rendering.\n- internal/ui/help.go: HelpOverlay with context-aware keybindings.\n- cmd/kbflash/main.go: Add --no-tui flag for headless CI/scripting mode.\n\nKey features:\n- Split keyboard shows left/right firmware selection\n- Uniboard shows single firmware selection\n- Build menu reflects configured build targets\n- Device status uses new detector interface\n- Vim keys \\(j/k\\) preserved for navigation\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
