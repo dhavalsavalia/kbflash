@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/dhavalsavalia/kbflash/internal/config"
 )
 
 var version = "dev"
@@ -23,12 +25,22 @@ func main() {
 	}
 
 	if *initConfig {
-		fmt.Println("TODO: Generate example config")
+		path, err := config.GenerateExampleConfig(*configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Created config at %s\n", path)
 		os.Exit(0)
 	}
 
-	// TODO: Load config and launch TUI
-	_ = configPath
-	fmt.Println("kbflash - Hackable keyboard firmware flasher")
-	fmt.Println("Run with --help for usage")
+	cfg, err := config.Load(*configPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	// TODO: Launch TUI with config
+	fmt.Printf("Loaded config for keyboard: %s\n", cfg.Keyboard.Name)
+	fmt.Println("TUI not yet implemented")
 }
