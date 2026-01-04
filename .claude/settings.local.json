@@ -42,7 +42,10 @@
       "Bash(git -C /Users/dhavalsavalia/projects/keyboard/corne-build status)",
       "Bash(git -C /Users/dhavalsavalia/projects/keyboard/corne-build log --oneline -3)",
       "mcp__plugin_beads_beads__create",
-      "Bash(git -C /Users/dhavalsavalia/projects/kbflash diff --stat HEAD)"
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash diff --stat HEAD)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"$\\(cat <<''EOF''\nAdd mandatory disconnect-reconnect safety flow before flash\n\nPrevents accidental flashing to wrong keyboard half by requiring:\n1. Device disconnect \\(unplug\\)\n2. Connect correct side\n3. Only then flash proceeds\n\nNew StateWaitingDisconnect state with dedicated UI panel showing\nstep-by-step instructions. Works for both split and uniboard.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "WebSearch",
+      "WebFetch(domain:zmk.dev)"
     ]
   }
 }

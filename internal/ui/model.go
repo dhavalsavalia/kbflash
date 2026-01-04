@@ -62,7 +62,7 @@ type Model struct {
 	cfg      *config.Config
 	scanner  *firmware.Scanner
 	detector device.Detector
-	builder  *firmware.Builder
+	builder  firmware.FirmwareBuilder
 	flasher  *firmware.Flasher
 
 	// Detection context and channel
@@ -111,7 +111,17 @@ func NewModel(cfg *config.Config) *Model {
 	}
 
 	if cfg.Build.Enabled {
-		m.builder = firmware.NewBuilder(cfg.Build.Command, cfg.Build.Args, cfg.Build.WorkingDir)
+		if cfg.Build.Mode == "docker" {
+			m.builder = firmware.NewDockerBuilder(
+				cfg.Build.Image,
+				cfg.Build.Board,
+				cfg.Build.Shield,
+				cfg.Build.WorkingDir,
+				cfg.Build.FirmwareDir,
+			)
+		} else {
+			m.builder = firmware.NewBuilder(cfg.Build.Command, cfg.Build.Args, cfg.Build.WorkingDir)
+		}
 	}
 
 	return m
@@ -435,6 +445,15 @@ func (m *Model) startBuild(target string) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// For Docker mode, check Docker is available first
+	if m.cfg.Build.Mode == "docker" {
+		ctx := context.Background()
+		if err := firmware.CheckDocker(ctx); err != nil {
+			m.logPanel.Add(LogError, err.Error())
+			return m, nil
+		}
+	}
+
 	m.state = StateBuilding
 	m.buildPercent = 0
 	m.buildTarget = target
@@ -447,6 +466,18 @@ func (m *Model) startBuild(target string) (tea.Model, tea.Cmd) {
 	ctx := context.Background()
 	return m, tea.Batch(
 		func() tea.Msg {
+			// For Docker mode, ensure image is pulled first
+			if dockerBuilder, ok := m.builder.(*firmware.DockerBuilder); ok {
+				if err := dockerBuilder.EnsureImage(ctx, func(msg string) {
+					select {
+					case m.buildProgress <- firmware.BuildProgress{Percent: 0, Message: msg}:
+					default:
+					}
+				}); err != nil {
+					return buildCompleteMsg{result: firmware.BuildResult{Success: false, Error: err}}
+				}
+			}
+
 			result := m.builder.Build(ctx, target, func(p firmware.BuildProgress) {
 				// Send progress to channel (non-blocking)
 				select {

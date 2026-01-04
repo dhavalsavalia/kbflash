@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // BuildProgress represents the current build state.
@@ -15,18 +16,26 @@ type BuildProgress struct {
 	Total   int
 	Percent int
 	Output  string
+	Message string // Human-readable message
 }
 
 // BuildResult represents the outcome of a build operation.
 type BuildResult struct {
-	Success bool
-	Error   error
+	Success    bool
+	Error      error
+	Duration   time.Duration
+	OutputPath string
+}
+
+// FirmwareBuilder is the interface for building firmware.
+type FirmwareBuilder interface {
+	Build(ctx context.Context, side string, progressFn func(BuildProgress)) BuildResult
 }
 
 // progressRegex matches ninja's [current/total] output.
 var progressRegex = regexp.MustCompile(`^\[(\d+)/(\d+)\]`)
 
-// Builder executes firmware build commands.
+// Builder executes firmware build commands (native mode).
 type Builder struct {
 	command    string
 	args       []string

@@ -11,6 +11,7 @@ import (
 const (
 	DefaultPollInterval = Duration(500 * time.Millisecond)
 	DefaultFilePattern  = "*.uf2"
+	DefaultDockerImage  = "zmkfirmware/zmk-dev-arm:stable"
 )
 
 // ExampleConfig is the template for --init with documentation comments.
@@ -21,36 +22,49 @@ const ExampleConfig = `# kbflash configuration
 # Required: Name of your keyboard
 name = "corne"
 
-# Optional: Keyboard type (e.g., "split", "unibody")
+# Keyboard type: "split" or "uni"
 type = "split"
 
-# Optional: For split keyboards, the side names
+# For split keyboards, the side names
 sides = ["left", "right"]
 
 [build]
-# Enable automatic firmware building before flash
-enabled = false
+# Enable firmware building (set to false for flash-only mode)
+enabled = true
 
-# Build command to run
-command = "make"
+# Build mode: "docker" (recommended) or "native"
+# Docker mode only requires Docker installed - no ZMK toolchain needed!
+mode = "docker"
 
-# Arguments to pass to build command
-args = []
+# --- Docker mode settings ---
+# Docker image (default: zmkfirmware/zmk-dev-arm:stable)
+image = "zmkfirmware/zmk-dev-arm:stable"
 
-# Directory to run build command in
-working_dir = ""
+# Your ZMK board (e.g., nice_nano_v2, seeeduino_xiao_ble)
+board = "nice_nano_v2"
 
-# Directory containing built firmware files
-firmware_dir = ""
+# Your ZMK shield (without _left/_right suffix)
+shield = "corne"
+
+# --- Native mode settings (if mode = "native") ---
+# command = "./build.sh"
+# args = ["{{side}}"]
+
+# Directory containing your zmk-config (for docker) or to run build in (for native)
+working_dir = "."
+
+# Where to output/find firmware files
+firmware_dir = "./firmware"
 
 # Glob pattern to match firmware files
 file_pattern = "*.uf2"
 
 [device]
-# Required: Device name to detect (shown in system when keyboard enters bootloader)
-name = "RPI-RP2"
+# Required: Device name shown when keyboard enters bootloader
+# Common values: "NICENANO", "RPI-RP2", "XIAO-SENSE"
+name = "NICENANO"
 
-# How often to poll for device (duration string: "500ms", "1s", etc.)
+# How often to poll for device
 poll_interval = "500ms"
 `
 

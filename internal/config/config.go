@@ -39,11 +39,17 @@ type KeyboardConfig struct {
 // BuildConfig defines firmware build settings.
 type BuildConfig struct {
 	Enabled     bool     `toml:"enabled"`
-	Command     string   `toml:"command"`
-	Args        []string `toml:"args"`
+	Mode        string   `toml:"mode"`         // "native" or "docker"
+	Command     string   `toml:"command"`      // for native mode
+	Args        []string `toml:"args"`         // for native mode
 	WorkingDir  string   `toml:"working_dir"`
 	FirmwareDir string   `toml:"firmware_dir"`
 	FilePattern string   `toml:"file_pattern"`
+
+	// Docker mode settings
+	Image  string `toml:"image"`  // Docker image (default: zmkfirmware/zmk-dev-arm:stable)
+	Board  string `toml:"board"`  // ZMK board (e.g., nice_nano_v2)
+	Shield string `toml:"shield"` // ZMK shield (e.g., corne) - _left/_right added automatically
 }
 
 // DeviceConfig defines device detection settings.
@@ -105,6 +111,12 @@ func applyDefaults(cfg *Config) {
 	}
 	if cfg.Build.FilePattern == "" {
 		cfg.Build.FilePattern = DefaultFilePattern
+	}
+	if cfg.Build.Mode == "" {
+		cfg.Build.Mode = "native" // default to native for backwards compatibility
+	}
+	if cfg.Build.Image == "" {
+		cfg.Build.Image = DefaultDockerImage
 	}
 }
 
