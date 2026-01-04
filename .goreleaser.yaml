@@ -1,0 +1,51 @@
+version: 2
+
+project_name: kbflash
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/kbflash
+    binary: kbflash
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+brews:
+  - repository:
+      owner: dhavalsavalia
+      name: homebrew-kbflash
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/dhavalsavalia/kbflash"
+    description: "TUI tool for flashing keyboard firmware"
+    license: "MIT"
+    test: |
+      system "#{bin}/kbflash", "--version"
+    install: |
+      bin.install "kbflash"
