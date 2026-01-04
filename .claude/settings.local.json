@@ -27,7 +27,15 @@
       "Bash(git -C /Users/dhavalsavalia/projects/kbflash add:*)",
       "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit --amend --no-edit)",
       "Bash(go mod tidy:*)",
-      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"$\\(cat <<''EOF''\nAdd config-driven TUI with split/uniboard support\n\nPort Bubbletea TUI from corne-build and adapt it for the config-driven\narchitecture. Changes include:\n\n- internal/ui/model.go: Main model using config for keyboard name, sides,\n  build command. Uses new device.Detector interface instead of Watcher.\n- internal/ui/panels.go: FirmwarePanel, StatusPanel, LogPanel with\n  conditional rendering for split vs uniboard keyboards.\n- internal/ui/dialogs.go: BuildMenuDialog shows configured targets from\n  config.Keyboard.Sides. ConfirmDialog for factory reset.\n- internal/ui/styles.go: ANSI color styles and progress bar rendering.\n- internal/ui/help.go: HelpOverlay with context-aware keybindings.\n- cmd/kbflash/main.go: Add --no-tui flag for headless CI/scripting mode.\n\nKey features:\n- Split keyboard shows left/right firmware selection\n- Uniboard shows single firmware selection\n- Build menu reflects configured build targets\n- Device status uses new detector interface\n- Vim keys \\(j/k\\) preserved for navigation\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"$\\(cat <<''EOF''\nAdd config-driven TUI with split/uniboard support\n\nPort Bubbletea TUI from corne-build and adapt it for the config-driven\narchitecture. Changes include:\n\n- internal/ui/model.go: Main model using config for keyboard name, sides,\n  build command. Uses new device.Detector interface instead of Watcher.\n- internal/ui/panels.go: FirmwarePanel, StatusPanel, LogPanel with\n  conditional rendering for split vs uniboard keyboards.\n- internal/ui/dialogs.go: BuildMenuDialog shows configured targets from\n  config.Keyboard.Sides. ConfirmDialog for factory reset.\n- internal/ui/styles.go: ANSI color styles and progress bar rendering.\n- internal/ui/help.go: HelpOverlay with context-aware keybindings.\n- cmd/kbflash/main.go: Add --no-tui flag for headless CI/scripting mode.\n\nKey features:\n- Split keyboard shows left/right firmware selection\n- Uniboard shows single firmware selection\n- Build menu reflects configured build targets\n- Device status uses new detector interface\n- Vim keys \\(j/k\\) preserved for navigation\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(gh repo view:*)",
+      "Bash(gh repo create:*)",
+      "Bash(goreleaser check:*)",
+      "Bash(brew install:*)",
+      "Bash(goreleaser build:*)",
+      "Bash(/Users/dhavalsavalia/projects/kbflash/dist/kbflash_darwin_arm64_v8.0/kbflash:*)",
+      "Bash(git clone:*)",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"Add dependency verification and document token requirements\")"
     ]
   }
 }
