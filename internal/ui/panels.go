@@ -223,6 +223,27 @@ func (p *StatusPanel) ViewBuilding(percent int, target string) string {
 	return strings.Join(lines, "\n")
 }
 
+// ViewWaitingDisconnect renders waiting for disconnect state (safety flow)
+func (p *StatusPanel) ViewWaitingDisconnect(target string) string {
+	var lines []string
+
+	spinner := SpinnerFrames[(time.Now().UnixMilli()/100)%int64(len(SpinnerFrames))]
+
+	lines = append(lines, "")
+	lines = append(lines, centerText(WarningStyle.Render(spinner+" UNPLUG DEVICE"), p.width))
+	lines = append(lines, "")
+	lines = append(lines, centerText("To flash "+strings.ToUpper(target)+":", p.width))
+	lines = append(lines, "")
+	lines = append(lines, centerText("1. Unplug the device now", p.width))
+	lines = append(lines, centerText("2. Connect the "+target+" half", p.width))
+	lines = append(lines, centerText("3. Double-tap reset button", p.width))
+	lines = append(lines, "")
+	lines = append(lines, "")
+	lines = append(lines, DimStyle.Render(centerText("Waiting for disconnect...", p.width)))
+
+	return strings.Join(lines, "\n")
+}
+
 // ViewWaiting renders waiting for device state
 func (p *StatusPanel) ViewWaiting(target string) string {
 	var lines []string
@@ -231,10 +252,12 @@ func (p *StatusPanel) ViewWaiting(target string) string {
 
 	lines = append(lines, "")
 	lines = append(lines, "")
-	lines = append(lines, centerText(WarningStyle.Render(spinner+" WAITING FOR DEVICE"), p.width))
+	lines = append(lines, centerText(SuccessStyle.Render("✓ Disconnected"), p.width))
 	lines = append(lines, "")
-	lines = append(lines, centerText("Connect "+target, p.width))
-	lines = append(lines, centerText("Double-tap reset", p.width))
+	lines = append(lines, centerText(WarningStyle.Render(spinner+" WAITING FOR "+strings.ToUpper(target)), p.width))
+	lines = append(lines, "")
+	lines = append(lines, centerText("Connect "+target+" half", p.width))
+	lines = append(lines, centerText("Double-tap reset button", p.width))
 	lines = append(lines, "")
 	lines = append(lines, "")
 	lines = append(lines, DimStyle.Render("Looking for "+p.deviceName+"..."))

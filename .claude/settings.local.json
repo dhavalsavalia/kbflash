@@ -35,7 +35,14 @@
       "Bash(goreleaser build:*)",
       "Bash(/Users/dhavalsavalia/projects/kbflash/dist/kbflash_darwin_arm64_v8.0/kbflash:*)",
       "Bash(git clone:*)",
-      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"Add dependency verification and document token requirements\")"
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash commit -m \"Add dependency verification and document token requirements\")",
+      "mcp__plugin_beads_beads__ready",
+      "Bash(kbflash --help:*)",
+      "Bash(/Users/dhavalsavalia/projects/kbflash/kbflash:*)",
+      "Bash(git -C /Users/dhavalsavalia/projects/keyboard/corne-build status)",
+      "Bash(git -C /Users/dhavalsavalia/projects/keyboard/corne-build log --oneline -3)",
+      "mcp__plugin_beads_beads__create",
+      "Bash(git -C /Users/dhavalsavalia/projects/kbflash diff --stat HEAD)"
     ]
   }
 }

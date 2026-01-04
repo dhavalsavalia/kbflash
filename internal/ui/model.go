@@ -18,6 +18,7 @@ type AppState int
 const (
 	StateIdle AppState = iota
 	StateBuilding
+	StateWaitingDisconnect // Safety: wait for user to unplug device
 	StateWaitingDevice
 	StateFlashing
 	StateComplete
@@ -195,6 +196,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.deviceStatus = DeviceDisconnected
 			m.devicePath = ""
 			m.logPanel.Add(LogInfo, "Device disconnected")
+			// Safety: if waiting for disconnect, transition to waiting for connect
+			if m.state == StateWaitingDisconnect {
+				m.state = StateWaitingDevice
+				m.logPanel.Add(LogInfo, "Now connect "+m.flashTarget+" half...")
+			}
 		}
 		// Continue listening for events
 		return m, m.listenForNextEvent()
@@ -232,10 +238,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.flashIndex++
 			if m.flashIndex < len(sides) {
-				// Wait for device reconnect for next side
+				// Safety: require disconnect before flashing next side
 				m.flashTarget = sides[m.flashIndex]
-				m.state = StateWaitingDevice
-				m.logPanel.Add(LogInfo, "Waiting for "+m.flashTarget+"...")
+				m.state = StateWaitingDisconnect
+				m.logPanel.Add(LogWarning, "Unplug device, then connect "+m.flashTarget)
 				return m, nil
 			}
 
@@ -305,7 +311,7 @@ func (m *Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.confirmDialog = nil
 			return m, nil
 		}
-		if m.state == StateWaitingDevice {
+		if m.state == StateWaitingDisconnect || m.state == StateWaitingDevice {
 			m.state = StateIdle
 			m.logPanel.Add(LogInfo, "Cancelled")
 			return m, nil
@@ -490,12 +496,22 @@ func (m *Model) prepareFlash() (tea.Model, tea.Cmd) {
 	m.flashTarget = sides[0]
 	m.startTime = time.Now()
 
-	if m.deviceStatus == DeviceConnected {
-		return m.startFlash()
+	// Safety: always require disconnect-reconnect cycle to prevent flashing wrong side
+	targetName := m.flashTarget
+	if m.cfg.Keyboard.Type != "split" {
+		targetName = "keyboard"
 	}
 
-	m.state = StateWaitingDevice
-	m.logPanel.Add(LogInfo, "Waiting for device...")
+	if m.deviceStatus == DeviceConnected {
+		// Device is connected - require disconnect first
+		m.state = StateWaitingDisconnect
+		m.logPanel.Add(LogWarning, "Unplug device, then connect "+targetName)
+	} else {
+		// Device already disconnected - wait for correct side to connect
+		m.state = StateWaitingDevice
+		m.logPanel.Add(LogInfo, "Connect "+targetName+" and double-tap reset...")
+	}
+
 	return m, tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
 		return tickMsg{}
 	})
@@ -701,6 +717,8 @@ func (m *Model) renderPanels() string {
 		statusContent = m.statusPanel.ViewIdle(m.firmwarePanel.Selected())
 	case StateBuilding:
 		statusContent = m.statusPanel.ViewBuilding(m.buildPercent, m.buildTarget)
+	case StateWaitingDisconnect:
+		statusContent = m.statusPanel.ViewWaitingDisconnect(m.flashTarget)
 	case StateWaitingDevice:
 		statusContent = m.statusPanel.ViewWaiting(m.flashTarget)
 	case StateFlashing:
@@ -757,8 +775,10 @@ func (m *Model) renderFooter() string {
 		hints = append(hints, "q Quit")
 	case StateBuilding:
 		hints = []string{"Building..."}
+	case StateWaitingDisconnect:
+		hints = []string{"Unplug device to continue", "Esc Cancel"}
 	case StateWaitingDevice:
-		hints = []string{"Waiting for device... Double-tap reset button", "Esc Cancel"}
+		hints = []string{"Connect device, double-tap reset", "Esc Cancel"}
 	case StateFlashing:
 		hints = []string{"Flashing... Do not disconnect device"}
 	case StateComplete:
