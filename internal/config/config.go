@@ -53,12 +53,19 @@ type DeviceConfig struct {
 }
 
 // DefaultPath returns the default config file path following XDG conventions.
+// On Unix, checks $XDG_CONFIG_HOME first, then falls back to ~/.config.
 func DefaultPath() (string, error) {
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		return "", fmt.Errorf("cannot determine config directory: %w", err)
+	// Check XDG_CONFIG_HOME first (Unix standard)
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		return filepath.Join(xdg, "kbflash", "config.toml"), nil
 	}
-	return filepath.Join(configDir, "kbflash", "config.toml"), nil
+
+	// Fallback to ~/.config on Unix, or os.UserConfigDir on other platforms
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("cannot determine home directory: %w", err)
+	}
+	return filepath.Join(home, ".config", "kbflash", "config.toml"), nil
 }
 
 // Load reads and parses a config file from the given path.

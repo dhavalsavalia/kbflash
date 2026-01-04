@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(superpowers:subagent-driven-development)",
+      "mcp__plugin_beads_beads__show",
+      "mcp__plugin_beads_beads__update",
+      "Bash(git rev-parse:*)",
+      "Bash(go test:*)",
+      "Bash(go build:*)",
+      "Bash(./kbflash:*)",
+      "Bash(echo:*)",
+      "Bash(/tmp/kbflash:*)",
+      "Bash(go run:*)"
+    ]
+  }
+}

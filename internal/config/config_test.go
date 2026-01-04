@@ -196,6 +196,39 @@ func TestDefaultPath(t *testing.T) {
 	}
 }
 
+func TestDefaultPath_XDGConfigHome(t *testing.T) {
+	// Save and restore original value
+	original := os.Getenv("XDG_CONFIG_HOME")
+	defer os.Setenv("XDG_CONFIG_HOME", original)
+
+	os.Setenv("XDG_CONFIG_HOME", "/custom/xdg/config")
+
+	path, err := DefaultPath()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expected := "/custom/xdg/config/kbflash/config.toml"
+	if path != expected {
+		t.Errorf("path = %q, want %q", path, expected)
+	}
+}
+
+func TestGenerateExampleConfig_ExistingFile(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.toml")
+
+	// Create existing file
+	if err := os.WriteFile(path, []byte("existing"), 0644); err != nil {
+		t.Fatalf("cannot create existing file: %v", err)
+	}
+
+	_, err := GenerateExampleConfig(path)
+	if err == nil {
+		t.Fatal("expected error for existing file")
+	}
+}
+
 func writeTempConfig(t *testing.T, content string) string {
 	t.Helper()
 	dir := t.TempDir()

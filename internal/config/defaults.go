@@ -56,6 +56,7 @@ poll_interval = "500ms"
 
 // GenerateExampleConfig writes the example config to the given path.
 // If path is empty, it uses the default XDG path.
+// Returns error if file already exists (won't overwrite).
 // Returns the path where the file was written.
 func GenerateExampleConfig(path string) (string, error) {
 	if path == "" {
@@ -64,6 +65,11 @@ func GenerateExampleConfig(path string) (string, error) {
 			return "", err
 		}
 		path = defaultPath
+	}
+
+	// Check if file already exists
+	if _, err := os.Stat(path); err == nil {
+		return "", fmt.Errorf("config file already exists: %s (delete it first to regenerate)", path)
 	}
 
 	// Create parent directory if needed
